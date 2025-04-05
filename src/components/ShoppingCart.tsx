@@ -1,17 +1,8 @@
 
 import React from 'react';
-import { 
-  ShoppingCart as CartIcon, 
-  X, 
-  Plus, 
-  Minus, 
-  CreditCard,
-  ArrowLeft
-} from 'lucide-react';
+import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Product } from './ProductCard';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 interface CartItem {
   product: Product;
@@ -25,112 +16,102 @@ interface ShoppingCartProps {
   onRemove: (productId: number) => void;
   onCheckout: () => void;
   isOpen: boolean;
+  className?: string; // Added className prop to fix the error
 }
 
-const ShoppingCart: React.FC<ShoppingCartProps> = ({
-  items,
-  onClose,
-  onAdd,
-  onRemove,
-  onCheckout,
-  isOpen
+const ShoppingCart: React.FC<ShoppingCartProps> = ({ 
+  items, 
+  onClose, 
+  onAdd, 
+  onRemove, 
+  onCheckout, 
+  isOpen,
+  className 
 }) => {
-  const totalItems = items.reduce((total, item) => total + item.quantity, 0);
-  const subtotal = items.reduce((total, item) => total + item.product.price * item.quantity, 0);
+  if (!isOpen) return null;
   
+  const totalPrice = items.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
+
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-[90%] sm:w-[400px] sm:max-w-md flex flex-col h-full" side="right">
-        <SheetHeader className="text-left">
-          <SheetTitle className="text-2xl flex items-center gap-2">
-            <CartIcon className="h-6 w-6" />
-            Your Cart
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({totalItems} {totalItems === 1 ? 'item' : 'items'})
-            </span>
-          </SheetTitle>
-        </SheetHeader>
+    <div className="fixed inset-0 bg-black/50 z-50 flex justify-end">
+      <div className={`w-full max-w-md bg-white h-full overflow-y-auto ${className}`}>
+        <div className="p-4 border-b flex items-center justify-between">
+          <h2 className="text-xl font-semibold flex items-center">
+            <ShoppingBag className="mr-2" /> Shopping Cart
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-100"
+            aria-label="Close cart"
+          >
+            <X />
+          </button>
+        </div>
         
-        {items.length > 0 ? (
+        {items.length === 0 ? (
+          <div className="p-4 text-center">
+            <p className="text-gray-500 mb-4">Your cart is empty</p>
+            <Button variant="outline" onClick={onClose}>
+              Continue Shopping
+            </Button>
+          </div>
+        ) : (
           <>
-            <ScrollArea className="flex-grow py-4">
-              <div className="space-y-4">
-                {items.map((item) => (
-                  <div key={item.product.id} className="flex items-center gap-4 p-2 rounded-lg bg-secondary">
-                    <div className="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden">
-                      <img 
-                        src={item.product.image} 
-                        alt={item.product.name} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-grow">
+            <div className="p-4 space-y-4">
+              {items.map((item) => (
+                <div key={item.product.id} className="flex items-center justify-between border-b pb-4">
+                  <div className="flex items-center">
+                    <img
+                      src={item.product.image}
+                      alt={item.product.name}
+                      className="w-16 h-16 object-cover rounded mr-4"
+                    />
+                    <div>
                       <h3 className="font-medium">{item.product.name}</h3>
-                      <p className="text-sm text-muted-foreground">${item.product.price.toFixed(2)} each</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        onClick={() => onRemove(item.product.id)}
-                        className="h-8 w-8 rounded-md"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-6 text-center">{item.quantity}</span>
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        onClick={() => onAdd(item.product)}
-                        className="h-8 w-8 rounded-md"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
+                      <p className="text-gray-600 text-sm">${item.product.price.toFixed(2)}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
+                  
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => onRemove(item.product.id)}
+                      className="p-1 rounded-full bg-gray-100 hover:bg-gray-200"
+                      aria-label={`Remove one ${item.product.name}`}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    
+                    <span className="w-8 text-center">{item.quantity}</span>
+                    
+                    <button
+                      onClick={() => onAdd(item.product)}
+                      className="p-1 rounded-full bg-gray-100 hover:bg-gray-200"
+                      aria-label={`Add one more ${item.product.name}`}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
             
-            <div className="border-t pt-4 space-y-4">
-              <div className="flex items-center justify-between text-lg font-medium">
-                <span>Subtotal:</span>
-                <span>${subtotal.toFixed(2)}</span>
+            <div className="border-t p-4">
+              <div className="flex justify-between mb-4">
+                <span className="font-medium">Total:</span>
+                <span className="font-bold">${totalPrice.toFixed(2)}</span>
               </div>
               
-              <Button 
-                className="w-full"
-                size="lg"
-                onClick={onCheckout}
-              >
-                <CreditCard className="mr-2 h-5 w-5" /> Checkout
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={onClose}
-              >
-                <ArrowLeft className="mr-2 h-5 w-5" /> Continue Shopping
+              <Button onClick={onCheckout} className="w-full">
+                Checkout
               </Button>
             </div>
           </>
-        ) : (
-          <div className="flex flex-col items-center justify-center flex-grow space-y-4 py-12">
-            <div className="rounded-full bg-muted p-6">
-              <ShoppingCart className="h-10 w-10 text-muted-foreground" />
-            </div>
-            <h3 className="text-xl font-medium">Your cart is empty</h3>
-            <p className="text-muted-foreground text-center">
-              Try saying "Add apples to my cart" or browse the products to add items
-            </p>
-            <Button variant="outline" onClick={onClose}>
-              <ArrowLeft className="mr-2 h-5 w-5" /> Start Shopping
-            </Button>
-          </div>
         )}
-      </SheetContent>
-    </Sheet>
+      </div>
+    </div>
   );
 };
 

@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { toast } from "sonner";
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VoiceAssistant from '@/components/VoiceAssistant';
@@ -9,7 +10,8 @@ import ShoppingCart from '@/components/ShoppingCart';
 import { products, categories, findProductsByName, findProductsByCategory } from '@/data/products';
 import VoiceService from '@/services/VoiceService';
 import { processCommand } from '@/utils/commandProcessor';
-import { Search, ShoppingBag, HelpCircle } from 'lucide-react';
+import { Search, ShoppingBag, HelpCircle, UserCircle, LogIn } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CartItem {
   product: Product;
@@ -28,6 +30,8 @@ const Index = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const voiceServiceRef = useRef<VoiceService | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,7 +49,10 @@ const Index = () => {
 
     // Welcome message
     setTimeout(() => {
-      speak("Welcome to Voice Grocer Aid. You can say 'help' to learn what I can do.");
+      speak(user 
+        ? `Welcome back ${user.name}. You can say 'help' to learn what I can do.` 
+        : "Welcome to Voice Grocer Aid. You can say 'help' to learn what I can do."
+      );
     }, 1000);
 
     return () => {
@@ -53,7 +60,7 @@ const Index = () => {
         voiceServiceRef.current.stopListening();
       }
     };
-  }, []);
+  }, [user]);
 
   // Check if voice service is speaking
   useEffect(() => {
@@ -151,24 +158,53 @@ const Index = () => {
       return;
     }
     
-    // In a real app, this would navigate to a checkout page or process payment
-    toast.success('Taking you to checkout');
-    speak('Taking you to checkout. Your total is ' + getCartTotal().toFixed(2) + ' dollars.');
+    if (!user) {
+      speak('Please log in or create an account to proceed with checkout.');
+      toast.error('Please log in to checkout');
+      navigate('/login');
+      return;
+    }
     
-    // Simulate a checkout process
-    setTimeout(() => {
-      setCart([]);
-      setIsCartOpen(false);
-      toast.success('Purchase complete! Thank you for shopping with us.');
-      speak('Thank you for your purchase! Your order will be delivered soon.');
-    }, 3000);
+    speak('Taking you to checkout.');
+    navigate('/checkout');
   };
 
   const handleVoiceResult = (transcript: string) => {
     setLastCommand(transcript);
     console.log('Voice command received:', transcript);
     
-    // Process the command
+    // Handle auth-related commands
+    const lowerTranscript = transcript.toLowerCase();
+    
+    if (lowerTranscript.includes('login') || lowerTranscript.includes('sign in')) {
+      speak('Taking you to the login page.');
+      navigate('/login');
+      return;
+    }
+    
+    if (lowerTranscript.includes('register') || lowerTranscript.includes('sign up') || lowerTranscript.includes('create account')) {
+      speak('Taking you to the registration page.');
+      navigate('/register');
+      return;
+    }
+    
+    if (lowerTranscript.includes('logout') || lowerTranscript.includes('sign out')) {
+      if (user) {
+        speak('Signing you out.');
+        logout();
+        toast.success('You have been signed out');
+      } else {
+        speak('You are not currently signed in.');
+      }
+      return;
+    }
+    
+    if (lowerTranscript.includes('checkout') || lowerTranscript.includes('pay') || lowerTranscript.includes('purchase')) {
+      handleCheckout();
+      return;
+    }
+    
+    // Process shopping commands
     const result = processCommand(transcript, products);
     console.log('Command result:', result);
     
@@ -229,6 +265,41 @@ const Index = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm hidden sm:inline-block">
+                  Welcome, {user.name}
+                </span>
+                <Button 
+                  size="sm" 
+                  variant="secondary" 
+                  onClick={logout}
+                >
+                  <UserCircle className="h-4 w-4 mr-1" /> 
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button 
+                  size="sm" 
+                  variant="secondary" 
+                  onClick={() => navigate('/login')}
+                >
+                  <LogIn className="h-4 w-4 mr-1" /> 
+                  Login
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => navigate('/register')}
+                  className="bg-white/10 text-white"
+                >
+                  Register
+                </Button>
+              </div>
+            )}
+            
             <Button 
               size="sm" 
               variant="secondary" 
