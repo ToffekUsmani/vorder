@@ -1,17 +1,18 @@
 ## Project info
 Online grocery shopping is inaccessible for 285M+ visually impaired people globally 
-![image](https://github.com/user-attachments/assets/78849402-f95c-43d5-9cf2-7f5ac41ef422)
+Current solutions like screen readers are slow, inefficient, and fail at dynamic tasks:
 
+Visual Dependency on other person.
+     Complex checkout processes (CAPTCHAs, unlabeled buttons).
+Most product images have no descriptions. Example: A screen reader just says 
+    "image123.jpg" instead of "fresh red tomatoes on sale.
+Dropdown menus read as 'List, 50 items...' forcing linear listening.
+Too Many Clicks! 
+     "Simple tasks like "Add 3 bananas to cart" require perfect button clicks—hard without seeing.
+Result: Dependence on others or abandoned purchases.
 **our soultion**
 VORDER is an online grocery shopping website specially for visually impaired peoples
-
-
 ![image](https://github.com/user-attachments/assets/f8928cbb-7ba0-4316-95fc-059eadf4bd6f)
-
-
-
-
-
 ## How can I edit this code?
 
 There are several ways of editing your application.
