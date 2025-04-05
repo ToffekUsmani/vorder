@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
@@ -27,10 +28,24 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Initial route component that redirects to login if not authenticated
+const InitialRoute = () => {
+  const { user, isLoading } = useAuth();
+  
+  // If loading, don't redirect yet
+  if (isLoading) return <div>Loading...</div>;
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <Index />;
+};
+
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<InitialRoute />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/checkout" element={

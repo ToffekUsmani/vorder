@@ -29,6 +29,8 @@ const Index = () => {
   const [focusedProductId, setFocusedProductId] = useState<number | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [errorRetryCount, setErrorRetryCount] = useState(0);
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -39,24 +41,50 @@ const Index = () => {
   useEffect(() => {
     voiceServiceRef.current = new VoiceService({
       onResult: handleVoiceResult,
-      onEnd: () => setIsListening(false),
+      onEnd: () => {
+        setIsListening(false);
+        // Speech recognition ended on its own, VoiceService will try to restart it
+      },
       onError: (error) => {
         console.error('Voice error:', error);
-        toast.error('Voice assistant error', { description: error });
-        setIsListening(false);
+        setHasError(true);
+        setErrorRetryCount(prev => prev + 1);
+        
+        if (error.includes('network')) {
+          toast.error('Voice assistant network error', { 
+            description: 'Trying to reconnect...', 
+            duration: 3000 
+          });
+        } else {
+          toast.error('Voice assistant error', { 
+            description: error, 
+            duration: 3000 
+          });
+        }
+        
+        // VoiceService will try to restart automatically
+        setTimeout(() => {
+          setHasError(false);
+        }, 5000);
       }
     });
 
-    // Welcome message
+    // Auto-start the voice assistant
     setTimeout(() => {
+      if (voiceServiceRef.current) {
+        voiceServiceRef.current.startListening();
+        setIsListening(true);
+      }
+      
+      // Welcome message
       speak(user 
         ? `Welcome back ${user.name}. You can say 'help' to learn what I can do.` 
-        : "Welcome to Voice Grocer Aid. You can say 'help' to learn what I can do."
+        : "Welcome to Voice Grocer Aid. I'll help you shop with voice commands. You can say 'help' to learn what I can do."
       );
     }, 1000);
 
     return () => {
-      if (isListening && voiceServiceRef.current) {
+      if (voiceServiceRef.current) {
         voiceServiceRef.current.stopListening();
       }
     };
@@ -91,6 +119,7 @@ const Index = () => {
         voiceServiceRef.current.startListening();
       }
       setIsListening(true);
+      setHasError(false);
     }
   };
 
@@ -170,6 +199,12 @@ const Index = () => {
   };
 
   const handleVoiceResult = (transcript: string) => {
+    // Reset error state if we get a successful result
+    if (hasError) {
+      setHasError(false);
+      setErrorRetryCount(0);
+    }
+    
     setLastCommand(transcript);
     console.log('Voice command received:', transcript);
     
@@ -201,6 +236,19 @@ const Index = () => {
     
     if (lowerTranscript.includes('checkout') || lowerTranscript.includes('pay') || lowerTranscript.includes('purchase')) {
       handleCheckout();
+      return;
+    }
+    
+    // Handle shopping cart commands
+    if (lowerTranscript.includes('open cart') || lowerTranscript.includes('show cart') || lowerTranscript.includes('view cart')) {
+      setIsCartOpen(true);
+      speak('Opening your shopping cart.');
+      return;
+    }
+    
+    if (lowerTranscript.includes('close cart') || lowerTranscript.includes('hide cart')) {
+      setIsCartOpen(false);
+      speak('Closing your shopping cart.');
       return;
     }
     
@@ -377,6 +425,7 @@ const Index = () => {
         lastCommand={lastCommand}
         cartCount={cart.reduce((total, item) => total + item.quantity, 0)}
         onCartClick={() => setIsCartOpen(true)}
+        hasError={hasError}
       />
       
       <ShoppingCart

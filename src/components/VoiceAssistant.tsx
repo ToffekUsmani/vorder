@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, ShoppingCart } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, ShoppingCart, WifiOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ interface VoiceAssistantProps {
   lastCommand: string;
   cartCount: number;
   onCartClick: () => void;
+  hasError?: boolean;
 }
 
 const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
@@ -25,19 +26,31 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
   lastCommand,
   cartCount,
   onCartClick,
+  hasError = false,
 }) => {
   const { toast } = useToast();
   const micRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isListening) {
+    if (isListening && !hasError) {
       toast({
         title: "Voice Assistant Active",
         description: "I'm listening. What would you like to do?",
         duration: 3000,
       });
     }
-  }, [isListening, toast]);
+  }, [isListening, toast, hasError]);
+
+  useEffect(() => {
+    if (hasError) {
+      toast({
+        title: "Voice Assistant Error",
+        description: "Having trouble with the microphone. Trying to reconnect...",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
+  }, [hasError, toast]);
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center gap-4">
@@ -62,13 +75,17 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
           ref={micRef}
           onClick={toggleListening}
           className={cn(
-            "relative flex items-center justify-center w-16 h-16 rounded-full cursor-pointer bg-primary text-white shadow-lg",
-            isListening && "pulse-animation"
+            "relative flex items-center justify-center w-16 h-16 rounded-full cursor-pointer text-white shadow-lg",
+            isListening && !hasError ? "bg-primary pulse-animation" : "",
+            hasError ? "bg-red-500 animate-pulse" : "bg-primary",
+            !isListening && !hasError ? "bg-slate-400" : ""
           )}
           aria-label={isListening ? "Stop listening" : "Start listening"}
         >
           <div className="relative z-10 flex items-center justify-center w-full h-full">
-            {isListening ? (
+            {hasError ? (
+              <WifiOff className="h-8 w-8" />
+            ) : isListening ? (
               <Mic className="h-8 w-8 animate-bounce-subtle" />
             ) : (
               <MicOff className="h-8 w-8" />
