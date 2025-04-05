@@ -16,6 +16,11 @@ interface ElevenLabsVoiceContextProps {
   isInitialized: boolean;
 }
 
+interface ConversationMessage {
+  role: string;
+  content: string;
+}
+
 const ElevenLabsVoiceContext = createContext<ElevenLabsVoiceContextProps | undefined>(undefined);
 
 export const ElevenLabsVoiceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -31,7 +36,7 @@ export const ElevenLabsVoiceProvider: React.FC<{ children: React.ReactNode }> = 
 
   // Initialize ElevenLabs conversation
   const conversation = useConversation({
-    onMessage: (message) => {
+    onMessage: (message: ConversationMessage) => {
       if (message.role === 'user') {
         setLastTranscript(message.content);
         if (onTranscriptCallback) {

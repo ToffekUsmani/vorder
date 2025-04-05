@@ -97,6 +97,70 @@ export const products: Product[] = [
     image: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578',
     category: 'fruits',
     description: 'Ripe and creamy avocados, perfect for toast or guacamole.'
+  },
+  {
+    id: 13,
+    name: 'Brown Rice',
+    price: 3.99,
+    image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c',
+    category: 'grains',
+    description: 'Nutritious whole grain brown rice, high in fiber.'
+  },
+  {
+    id: 14,
+    name: 'Ground Beef',
+    price: 7.99,
+    image: 'https://images.unsplash.com/photo-1588168333986-5078d3ae3976',
+    category: 'meat',
+    description: 'Lean ground beef perfect for burgers, meatballs, and more.'
+  },
+  {
+    id: 15,
+    name: 'Carrots',
+    price: 1.99,
+    image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37',
+    category: 'vegetables',
+    description: 'Fresh crisp carrots ideal for snacking, cooking, or juicing.'
+  },
+  {
+    id: 16,
+    name: 'Pasta',
+    price: 2.49,
+    image: 'https://images.unsplash.com/photo-1626078436898-7c7f689b8be9',
+    category: 'grains',
+    description: 'Italian semolina pasta, perfect for your favorite sauce.'
+  },
+  {
+    id: 17,
+    name: 'Onions',
+    price: 1.49,
+    image: 'https://images.unsplash.com/photo-1618512496248-a3472b67e42f',
+    category: 'vegetables',
+    description: 'Sweet yellow onions essential for cooking and flavor.'
+  },
+  {
+    id: 18,
+    name: 'Cheddar Cheese',
+    price: 5.99,
+    image: 'https://images.unsplash.com/photo-1618164436241-4473940d1f5c',
+    category: 'dairy',
+    description: 'Sharp cheddar cheese perfect for sandwiches, burgers, or snacking.'
+  },
+  {
+    id: 19,
+    name: 'Broccoli',
+    price: 2.99,
+    image: 'https://images.unsplash.com/photo-1615485500704-8e990f9309a5',
+    category: 'vegetables',
+    description: 'Fresh broccoli florets packed with vitamins and nutrients.'
+  },
+  {
+    id: 20,
+    name: 'Strawberries',
+    price: 4.99,
+    image: 'https://images.unsplash.com/photo-1543528176-61b239494933',
+    category: 'fruits',
+    description: 'Sweet juicy strawberries, perfect for desserts or smoothies.'
   }
 ];
 
@@ -107,7 +171,8 @@ export const categories = [
   { id: 'dairy', name: 'Dairy & Eggs' },
   { id: 'bakery', name: 'Bakery' },
   { id: 'meat', name: 'Meat' },
-  { id: 'seafood', name: 'Seafood' }
+  { id: 'seafood', name: 'Seafood' },
+  { id: 'grains', name: 'Grains & Pasta' }
 ];
 
 export const findProductsByName = (query: string): Product[] => {

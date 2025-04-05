@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, ShoppingCart, WifiOff, RefreshCw } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, ShoppingCart, WifiOff, RefreshCw, HelpCircle, Home } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface VoiceAssistantProps {
   isListening: boolean;
@@ -29,14 +30,17 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
   hasError = false,
 }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const micRef = useRef<HTMLDivElement>(null);
   const [connectionStatus, setConnectionStatus] = useState<'active' | 'error' | 'reconnecting'>(
     hasError ? 'error' : 'active'
   );
+  const [showRetry, setShowRetry] = useState(false);
 
   // Update connection status when error state changes
   useEffect(() => {
     setConnectionStatus(hasError ? 'error' : isListening ? 'active' : 'reconnecting');
+    setShowRetry(hasError);
   }, [hasError, isListening]);
 
   useEffect(() => {
@@ -63,9 +67,20 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
   const handleRetry = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the parent click handler from firing
     setConnectionStatus('reconnecting');
+    setShowRetry(false);
     setTimeout(() => {
       toggleListening();
     }, 500);
+  };
+
+  const navigateToHelp = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate('/help');
+  };
+
+  const navigateToHome = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate('/');
   };
 
   return (
@@ -77,6 +92,16 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
       )}
       
       <div className="flex items-center gap-4">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={navigateToHome}
+          className="rounded-full shadow-md bg-white h-12 w-12"
+          aria-label="Go to home page"
+        >
+          <Home className="h-6 w-6" />
+        </Button>
+
         <Button 
           variant="outline" 
           size="icon" 
@@ -102,15 +127,17 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
             {hasError ? (
               <div className="relative">
                 <WifiOff className="h-8 w-8" />
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="absolute -top-8 -right-8 h-6 w-6 p-1 bg-white text-red-500 rounded-full hover:bg-white/80"
-                  onClick={handleRetry}
-                  aria-label="Retry connection"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
+                {showRetry && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="absolute -top-8 -right-8 h-6 w-6 p-1 bg-white text-red-500 rounded-full hover:bg-white/80"
+                    onClick={handleRetry}
+                    aria-label="Retry connection"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             ) : isListening ? (
               <Mic className="h-8 w-8 animate-bounce-subtle" />
@@ -119,6 +146,16 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
             )}
           </div>
         </div>
+
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={navigateToHelp}
+          className="rounded-full shadow-md bg-white h-12 w-12"
+          aria-label="Get help"
+        >
+          <HelpCircle className="h-6 w-6" />
+        </Button>
         
         <Button 
           variant="outline" 
@@ -139,7 +176,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
       {/* Connection status indicator */}
       <div className="text-xs text-center text-white bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">
         {connectionStatus === 'active' && "Voice assistant active"}
-        {connectionStatus === 'error' && "Network error - try again"}
+        {connectionStatus === 'error' && "Network error - tap to retry"}
         {connectionStatus === 'reconnecting' && "Reconnecting..."}
       </div>
     </div>

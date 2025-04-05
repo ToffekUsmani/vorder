@@ -12,6 +12,7 @@ import Register from "./pages/Register";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 import Setup from "./pages/Setup";
+import HelpPage from "./pages/Help";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient();
@@ -24,13 +25,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (isLoading) return <div>Loading...</div>;
   
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/register" replace />;
   }
   
   return <>{children}</>;
 };
 
-// Initial route component that redirects to login if not authenticated
+// Initial route component that redirects to register if not authenticated
 const InitialRoute = () => {
   const { user, isLoading } = useAuth();
   
@@ -38,7 +39,7 @@ const InitialRoute = () => {
   if (isLoading) return <div>Loading...</div>;
   
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/register" replace />;
   }
   
   return <Index />;
@@ -51,6 +52,7 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/setup" element={<Setup />} />
+      <Route path="/help" element={<HelpPage />} />
       <Route path="/checkout" element={
         <ProtectedRoute>
           <Checkout />
