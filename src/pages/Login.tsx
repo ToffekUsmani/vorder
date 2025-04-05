@@ -5,98 +5,79 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Mic, Loader2 } from 'lucide-react';
+import { Mic, Loader2, VolumeX, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
-import VoiceService from '@/services/VoiceService';
+import { useElevenLabsVoice } from '@/services/ElevenLabsVoiceService';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isListening, setIsListening] = useState(false);
   const [currentField, setCurrentField] = useState<'email' | 'password' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const voiceServiceRef = useRef<VoiceService | null>(null);
+  
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
+  
+  const { 
+    speak, 
+    startListening, 
+    stopListening, 
+    isListening, 
+    lastTranscript, 
+    hasError,
+    toggleMute,
+    isMuted
+  } = useElevenLabsVoice();
 
+  // Welcome message on page load
   useEffect(() => {
-    // Initialize voice service
-    voiceServiceRef.current = new VoiceService({
-      onResult: handleVoiceResult,
-      onEnd: () => setIsListening(false),
-      onError: (error) => {
-        console.error('Voice error:', error);
-        toast.error('Voice assistant error', { description: error });
-        setIsListening(false);
-      }
-    });
-
-    // Welcome message
     setTimeout(() => {
-      speak("Welcome to the login page. You can say 'email' to enter your email, 'password' to enter your password, or 'login' to submit the form.");
+      speak("Welcome to the login page. You can use voice commands to enter your email, password, and log in. Say 'email' to start entering your email address.");
     }, 1000);
-
+    
+    // Start listening automatically
+    startListening();
+    
     return () => {
-      if (isListening && voiceServiceRef.current) {
-        voiceServiceRef.current.stopListening();
-      }
+      stopListening();
     };
   }, []);
 
-  const speak = (text: string) => {
-    if (voiceServiceRef.current) {
-      voiceServiceRef.current.speak(text);
-    }
-  };
-
-  const startListening = (field: 'email' | 'password' | null) => {
-    if (voiceServiceRef.current) {
-      setCurrentField(field);
-      setIsListening(true);
-      voiceServiceRef.current.startListening();
-      
-      if (field === 'email') {
-        speak("Please say your email address");
-      } else if (field === 'password') {
-        speak("Please say your password");
-      } else {
-        speak("I'm listening. What would you like to do?");
-      }
-    }
-  };
-
-  const handleVoiceResult = (transcript: string) => {
-    const lowerTranscript = transcript.toLowerCase();
+  // Process voice commands
+  useEffect(() => {
+    if (!lastTranscript || !isListening) return;
     
-    // Commands
-    if (lowerTranscript.includes('email')) {
+    const transcript = lastTranscript.toLowerCase();
+    
+    // Process commands
+    if (transcript.includes('email')) {
       setCurrentField('email');
       emailInputRef.current?.focus();
       speak("Please say your email address");
       return;
     }
     
-    if (lowerTranscript.includes('password')) {
+    if (transcript.includes('password')) {
       setCurrentField('password');
       passwordInputRef.current?.focus();
       speak("Please say your password");
       return;
     }
     
-    if (lowerTranscript.includes('login') || lowerTranscript.includes('submit')) {
+    if (transcript.includes('login') || transcript.includes('submit') || transcript.includes('sign in')) {
       handleSubmit();
       return;
     }
     
-    if (lowerTranscript.includes('register') || lowerTranscript.includes('sign up')) {
+    if (transcript.includes('register') || transcript.includes('sign up')) {
       speak("Taking you to the registration page");
       navigate('/register');
       return;
     }
     
-    if (lowerTranscript.includes('help')) {
+    if (transcript.includes('help')) {
       speak("You can say email to input your email, password to input your password, login to submit the form, or register to create a new account.");
       return;
     }
@@ -104,14 +85,31 @@ const Login = () => {
     // Field input
     if (currentField === 'email') {
       // Remove spaces and convert to lowercase for email
-      const cleanedEmail = transcript.replace(/\s+/g, '').toLowerCase();
+      const cleanedEmail = lastTranscript.replace(/\s+/g, '').toLowerCase();
       setEmail(cleanedEmail);
       speak(`Email set to ${cleanedEmail.split('').join(' ')}`);
     } else if (currentField === 'password') {
       // Remove spaces for password
-      const cleanedPassword = transcript.replace(/\s+/g, '');
+      const cleanedPassword = lastTranscript.replace(/\s+/g, '');
       setPassword(cleanedPassword);
       speak("Password has been set");
+    }
+  }, [lastTranscript, isListening, currentField]);
+
+  const handleVoiceButtonClick = (field: 'email' | 'password' | null) => {
+    setCurrentField(field);
+    if (!isListening) {
+      startListening();
+    }
+    
+    if (field === 'email') {
+      speak("Please say your email address");
+      emailInputRef.current?.focus();
+    } else if (field === 'password') {
+      speak("Please say your password");
+      passwordInputRef.current?.focus();
+    } else {
+      speak("I'm listening. What would you like to do?");
     }
   };
 
@@ -161,7 +159,7 @@ const Login = () => {
                   type="button" 
                   variant="outline" 
                   size="sm"
-                  onClick={() => startListening('email')}
+                  onClick={() => handleVoiceButtonClick('email')}
                   className="h-8 w-8 p-0"
                 >
                   <Mic className="h-4 w-4" />
@@ -185,7 +183,7 @@ const Login = () => {
                   type="button" 
                   variant="outline" 
                   size="sm"
-                  onClick={() => startListening('password')}
+                  onClick={() => handleVoiceButtonClick('password')}
                   className="h-8 w-8 p-0"
                 >
                   <Mic className="h-4 w-4" />
@@ -215,12 +213,19 @@ const Login = () => {
             </Button>
           </form>
           
-          <div className="mt-6">
+          <div className="mt-6 space-y-4">
             <Button
               type="button"
-              variant="secondary"
+              variant={isListening ? "default" : "secondary"}
               className="w-full"
-              onClick={() => startListening(null)}
+              onClick={() => {
+                if (isListening) {
+                  stopListening();
+                } else {
+                  startListening();
+                  handleVoiceButtonClick(null);
+                }
+              }}
             >
               {isListening ? (
                 <>
@@ -234,6 +239,43 @@ const Login = () => {
                 </>
               )}
             </Button>
+            
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={toggleMute}
+            >
+              {isMuted ? (
+                <>
+                  <VolumeX className="mr-2 h-4 w-4" />
+                  Unmute Voice
+                </>
+              ) : (
+                <>
+                  <Volume2 className="mr-2 h-4 w-4" />
+                  Mute Voice
+                </>
+              )}
+            </Button>
+            
+            {hasError && (
+              <p className="text-center text-sm text-red-500">
+                Voice assistant has encountered an error. Please try refreshing the page.
+              </p>
+            )}
+            
+            {currentField && (
+              <div className="mt-2 text-center text-sm text-muted-foreground">
+                Currently listening for: <span className="font-medium">{currentField}</span>
+              </div>
+            )}
+            
+            {lastTranscript && (
+              <div className="mt-2 p-2 border rounded-md bg-muted/50">
+                <p className="text-sm">I heard: "{lastTranscript}"</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

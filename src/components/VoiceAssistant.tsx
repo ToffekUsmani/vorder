@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, ShoppingCart, WifiOff } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, ShoppingCart, WifiOff, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,14 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
 }) => {
   const { toast } = useToast();
   const micRef = useRef<HTMLDivElement>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'active' | 'error' | 'reconnecting'>(
+    hasError ? 'error' : 'active'
+  );
+
+  // Update connection status when error state changes
+  useEffect(() => {
+    setConnectionStatus(hasError ? 'error' : isListening ? 'active' : 'reconnecting');
+  }, [hasError, isListening]);
 
   useEffect(() => {
     if (isListening && !hasError) {
@@ -51,6 +59,14 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
       });
     }
   }, [hasError, toast]);
+
+  const handleRetry = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the parent click handler from firing
+    setConnectionStatus('reconnecting');
+    setTimeout(() => {
+      toggleListening();
+    }, 500);
+  };
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center gap-4">
@@ -84,7 +100,18 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
         >
           <div className="relative z-10 flex items-center justify-center w-full h-full">
             {hasError ? (
-              <WifiOff className="h-8 w-8" />
+              <div className="relative">
+                <WifiOff className="h-8 w-8" />
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="absolute -top-8 -right-8 h-6 w-6 p-1 bg-white text-red-500 rounded-full hover:bg-white/80"
+                  onClick={handleRetry}
+                  aria-label="Retry connection"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
             ) : isListening ? (
               <Mic className="h-8 w-8 animate-bounce-subtle" />
             ) : (
@@ -107,6 +134,13 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({
             </span>
           )}
         </Button>
+      </div>
+
+      {/* Connection status indicator */}
+      <div className="text-xs text-center text-white bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">
+        {connectionStatus === 'active' && "Voice assistant active"}
+        {connectionStatus === 'error' && "Network error - try again"}
+        {connectionStatus === 'reconnecting' && "Reconnecting..."}
       </div>
     </div>
   );

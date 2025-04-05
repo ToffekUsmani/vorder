@@ -5,11 +5,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ElevenLabsVoiceProvider } from "@/services/ElevenLabsVoiceService";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
+import Setup from "./pages/Setup";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient();
@@ -48,6 +50,7 @@ const AppRoutes = () => {
       <Route path="/" element={<InitialRoute />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/setup" element={<Setup />} />
       <Route path="/checkout" element={
         <ProtectedRoute>
           <Checkout />
@@ -62,13 +65,15 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
+      <ElevenLabsVoiceProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </TooltipProvider>
+      </ElevenLabsVoiceProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
