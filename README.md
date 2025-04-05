@@ -4,25 +4,23 @@
 
 -Visual Dependency on other person.
      Complex checkout processes (CAPTCHAs, unlabeled buttons).
+     
 -Most product images have no descriptions. Example: A screen reader just says 
     "image123.jpg" instead of "fresh red tomatoes on sale.
+    
 -Dropdown menus read as 'List, 50 items...' forcing linear listening.
 Too Many Clicks! 
      "Simple tasks like "Add 3 bananas to cart" require perfect button clicks—hard without seeing.
 Result: Dependence on others or abandoned purchases.
 
+
 **our soultion**
 VORDER is an online grocery shopping website specially for visually impaired peoples
 ![WhatsApp Image 2025-04-05 at 01 21 30_1b0d05f1](https://github.com/user-attachments/assets/16cb2fde-2cab-4e9b-85d9-9f5ad6f5f1cd)
 ## How can I edit this code?
-
 There are several ways of editing your application.
 
-
 **Use your preferred IDE**
-
-.
-
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
 Follow these steps:
