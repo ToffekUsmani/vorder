@@ -12,7 +12,7 @@ Too Many Clicks!
 Result: Dependence on others or abandoned purchases.
 **our soultion**
 VORDER is an online grocery shopping website specially for visually impaired peoples
-![image](https://github.com/user-attachments/assets/f8928cbb-7ba0-4316-95fc-059eadf4bd6f)
+![WhatsApp Image 2025-04-05 at 01 21 30_1b0d05f1](https://github.com/user-attachments/assets/16cb2fde-2cab-4e9b-85d9-9f5ad6f5f1cd)
 ## How can I edit this code?
 
 There are several ways of editing your application.
