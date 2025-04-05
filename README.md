@@ -1,4 +1,14 @@
 ## Project info
+Online grocery shopping is inaccessible for 285M+ visually impaired people globally 
+![image](https://github.com/user-attachments/assets/78849402-f95c-43d5-9cf2-7f5ac41ef422)
+
+**our soultion**
+VORDER is an online grocery shopping website specially for visually impaired peoples
+
+
+![image](https://github.com/user-attachments/assets/f8928cbb-7ba0-4316-95fc-059eadf4bd6f)
+
+
 
 
 
@@ -9,7 +19,7 @@ There are several ways of editing your application.
 
 **Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+.
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
